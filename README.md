@@ -42,3 +42,38 @@ For example:
 Dockerfile defines how to build a Django app image.
 docker-compose.yml launches the app and links it with a database.
 
+
+What is Flake8?
+Flake8 is a Python tool for:
+
+PEP 8 compliance: Enforces Python's style guide.
+Linting: Detects issues like unused imports or undefined variables.
+Complexity checks: Warns about overly complex code.
+
+To Execute - docker-compose run --rm app sh -c "flake8"
+
+Explanation:
+docker-compose run:
+
+Runs a one-time command in the container specified in the docker-compose.yml file.
+--rm:
+
+Removes the container after the command finishes, keeping your system clean.
+app:
+
+Refers to the service named app in the docker-compose.yml.
+sh -c "flake8":
+
+Executes the flake8 command inside a shell (sh) in the container.
+docker-compose run --rm app sh -c "django-admin startproject app ."
+Breakdown:
+docker-compose run: Runs a one-time command in a container specified in the docker-compose.yml file.
+
+--rm: Removes the container after the command finishes to avoid leaving unnecessary stopped containers.
+
+app: The name of the service defined in your docker-compose.yml file where the command will run (likely configured to use a Django-compatible image).
+
+sh -c "django-admin startproject app .":
+
+Runs a shell (sh) to execute the given command.
+django-admin startproject app . creates a new Django project named app in the current directory (.).
