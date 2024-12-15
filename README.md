@@ -1,124 +1,98 @@
 # recipe-app-api
-Django’s test framework is built on Python's unittest module and provides tools to help you write tests for your Django applications. It integrates with Django models, views, and other components, making it easy to test your application’s functionality.
+version: "3.9"
 
-Key Components:
-TestCase:
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      - db
 
-A subclass of unittest.TestCase used for writing tests.
-Automatically sets up and tears down the database for each test.
-Client:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
 
-self.client is a test client for simulating HTTP requests. It allows you to test views, forms, and APIs.
-Common methods: get(), post(), put(), delete().
-Assertions:
+volumes:
+  dev-db-data:
+This is a docker-compose.yml file that defines two services: an application (app) and a PostgreSQL database (db), configured for development purposes.
 
-Methods like assertEqual(), assertContains(), assertRaises(), etc., to check if the behavior of your application matches the expected result.
-Fixtures:
+Breakdown:
+Version:
 
-Data that can be loaded into the database before tests run, often using setUp() or fixtures attributes.
-Mocking:
+Specifies the Docker Compose file format (3.9).
+Services:
 
-You can mock dependencies like external APIs, database queries, etc., using Python’s unittest.mock to isolate tests.
+app:
+build: Specifies the context and build arguments. It builds the application from the current directory (.) and sets an argument DEV=true.
+ports: Maps port 8000 of the container to port 8000 on the host, so the app is accessible via localhost:8000.
+volumes: Mounts the local ./app directory to /app inside the container for live code reloading.
+command: Runs the Django development server (python manage.py runserver 0.0.0.0:8000) within the container.
+environment: Sets environment variables for the database connection (host, name, user, password).
+depends_on: Ensures the db service is started before the app service.
+db:
+image: Uses the official postgres:13-alpine Docker image for PostgreSQL.
+volumes: Persists the database data in a named volume (dev-db-data) to retain data across container restarts.
+environment: Sets environment variables for the PostgreSQL database (database name, user, password).
+Volumes:
+
+dev-db-data: A named volume to store PostgreSQL data persistently.
+How it works:
+When you run docker-compose up, the app and database containers are created.
+The app connects to the database using the environment variables for DB_HOST, DB_NAME, DB_USER, and DB_PASS.
+The database service initializes a PostgreSQL instance with the provided credentials.
+
+In Docker, volumes are used to persist data outside the container’s filesystem, ensuring data is retained even when containers are stopped or recreated.
+
+In your docker-compose.yml, the volume dev-db-data is used to store PostgreSQL database data persistently. It's mapped to /var/lib/postgresql/data inside the container, where PostgreSQL stores its data. This setup ensures that the database data is retained across container restarts, providing data persistence, isolation, and better performance compared to bind mounts. Volumes are managed by Docker and can be inspected, backed up, and reused across container lifecycles.
+
+
+
+psycopg2 is a popular PostgreSQL adapter for Python. It allows Python applications to connect to and interact with PostgreSQL databases using SQL queries.
 
 Key Features:
-Test isolation: Tests run independently, with the database reset between each test.
-Client: Simulates HTTP requests to test views and APIs.
-Asserts: Built-in assertions to verify correctness.
-Fixtures and Mocks: Setup and mock external dependencies for isolated tests.
---------------------------------------
-Mocking in the Django test framework allows you to isolate specific parts of your application during testing. This is especially useful when testing views, external services, or methods that rely on network calls, database queries, or other dependencies.
-
-Django integrates seamlessly with Python’s unittest.mock module to replace parts of your code with mock objects during tests.
-
-Why Mock?
-Isolate Components: Test specific parts of your code without running dependent services or methods.
-Avoid Side Effects: Prevent external calls (e.g., APIs or emails) during tests.
-Simulate Edge Cases: Test how your code behaves under unusual or error conditions.
-
-
-unittest.mock provides two key tools for mocking in Python: Mock objects and the patch function. Both are commonly used for creating mock behaviors in tests, but they serve slightly different purposes and can sometimes be used together.
-
-1. Mock Object
-A Mock object is a general-purpose mock that can simulate methods, attributes, and return values. It's used when you want to directly create and manipulate mock instances in your code.
-
-Example: Mocking a Function or Object
-python
-
-from unittest.mock import Mock
-
-# Create a mock object
-mock_function = Mock()
-
-# Set its return value
-mock_function.return_value = 42
-
-# Use the mock
-result = mock_function()
-print(result)  # Output: 42
-
-# Assert the mock was called
-mock_function.assert_called_once()
+Database Connection: It facilitates connecting to a PostgreSQL database from a Python application.
+Query Execution: Allows you to execute SQL queries (e.g., SELECT, INSERT, UPDATE, DELETE) and retrieve results.
+Cursor Object: Uses a cursor to interact with the database, execute queries, and fetch results.
+Transaction Support: Supports database transactions, including committing or rolling back changes.
 
 
 
 
-unittest.mock provides two key tools for mocking in Python: Mock objects and the patch function. Both are commonly used for creating mock behaviors in tests, but they serve slightly different purposes and can sometimes be used together.
-
-1. Mock Object
-A Mock object is a general-purpose mock that can simulate methods, attributes, and return values. It's used when you want to directly create and manipulate mock instances in your code.
-
-Example: Mocking a Function or Object
-python
-Copy code
-from unittest.mock import Mock
-
-# Create a mock object
-mock_function = Mock()
-
-# Set its return value
-mock_function.return_value = 42
-
-# Use the mock
-result = mock_function()
-print(result)  # Output: 42
-
-# Assert the mock was called
-mock_function.assert_called_once()
-2. patch Function
-patch is a decorator or context manager that temporarily replaces an object (like a function or class) with a mock during the test. It’s used when you want to mock an object within a specific namespace or scope.
-
-Example: Mocking an Imported Function
-python
-Copy code
-from unittest.mock import patch
-
-# Function that uses an imported function
-def my_function():
-    from math import sqrt
-    return sqrt(16)
-
-# Test with patch
-with patch("math.sqrt", return_value=5) as mock_sqrt:
-    result = my_function()
-    print(result)  # Output: 5
-    mock_sqrt.assert_called_once_with(16)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': os.environ.get('DB_HOST'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASS'),
+    }
+}
+For a local development setup, your environment variables (e.g., in a .env file or Docker) might look like this:
 
 
-When to Use Mock vs patch
-Use Mock when:
+DB_HOST=localhost
+DB_NAME=mydatabase
+DB_USER=myuser
+DB_PASS=mypassword
+In a Docker environment, these variables could be passed through the docker-compose.yml file as shown earlier.
 
-You need a standalone mock object to test logic without dependencies.
-You want to test interactions with your own mock object.
-Use patch when:
-
-You need to mock an external dependency or a part of your code (e.g., an imported function).
-You want to ensure the mock is applied only within a specific test or scope.
-
-Django REST Framework (DRF) provides a built-in APIClient for testing APIs in Django projects. It extends Django's TestCase and integrates seamlessly with DRF, making it easy to simulate HTTP requests and verify responses in test cases.
-
-Setting Up the APIClient
-Import the APIClient from rest_framework.test.
-Use the client to send HTTP requests like get, post, put, delete, etc., to your API endpoints.
-Assertions can be made on the status code and response data.
-
-
+Conclusion:
+This configuration ensures that your Django application can connect to a PostgreSQL database using dynamic, environment-specific credentials, making it easier to deploy the application in different environments (development, staging, production) without hardcoding sensitive information.
