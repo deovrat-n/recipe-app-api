@@ -31,49 +31,35 @@ Port Mapping: Maps host port 8000 to container port 8000.
 Live Sync: Syncs the ./app directory with /app in the container.
 Runs Server: Starts the Django server at 0.0.0.0:8000.
 
+---
+name: Checks
 
+on: [push]
 
+jobs:
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: docker-compose run --rm app sh -c "python manage.py test"
+      - name: Lint
+        run: docker-compose run --rm app sh -c "flake8"
 
-How They Work Together
-Dockerfile: Creates the image for a single service (e.g., Django backend or a database).
-Docker Compose: Uses that image (or multiple images) to manage containers, networks, and volumes.
-For example:
+This GitHub Actions workflow does the following:
 
-Dockerfile defines how to build a Django app image.
-docker-compose.yml launches the app and links it with a database.
-
-
-What is Flake8?
-Flake8 is a Python tool for:
-
-PEP 8 compliance: Enforces Python's style guide.
-Linting: Detects issues like unused imports or undefined variables.
-Complexity checks: Warns about overly complex code.
-
-To Execute - docker-compose run --rm app sh -c "flake8"
-
-Explanation:
-docker-compose run:
-
-Runs a one-time command in the container specified in the docker-compose.yml file.
---rm:
-
-Removes the container after the command finishes, keeping your system clean.
-app:
-
-Refers to the service named app in the docker-compose.yml.
-sh -c "flake8":
-
-Executes the flake8 command inside a shell (sh) in the container.
-docker-compose run --rm app sh -c "django-admin startproject app ."
-Breakdown:
-docker-compose run: Runs a one-time command in a container specified in the docker-compose.yml file.
-
---rm: Removes the container after the command finishes to avoid leaving unnecessary stopped containers.
-
-app: The name of the service defined in your docker-compose.yml file where the command will run (likely configured to use a Django-compatible image).
-
-sh -c "django-admin startproject app .":
-
-Runs a shell (sh) to execute the given command.
-django-admin startproject app . creates a new Django project named app in the current directory (.).
+Triggered by: Any code push.
+Environment: Runs on Ubuntu 20.04.
+Steps:
+Logs into Docker Hub using credentials.
+Checks out the repository code.
+Runs tests using python manage.py test inside a Docker container.
+Checks Python code style using flake8.
+It ensures code quality (linting) and correctness (testing) with every push.
