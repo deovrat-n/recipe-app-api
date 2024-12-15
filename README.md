@@ -63,3 +63,4 @@ Checks out the repository code.
 Runs tests using python manage.py test inside a Docker container.
 Checks Python code style using flake8.
 It ensures code quality (linting) and correctness (testing) with every push.
+Hi
