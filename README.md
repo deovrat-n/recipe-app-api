@@ -3,13 +3,13 @@ Django REST Framework (DRF) Spectacular makes it easy to integrate Swagger UI fo
 1. Install DRF Spectacular
 If you haven't already installed DRF Spectacular, do so with pip:
 
-<!-- //pip install drf-spectacular -->
+//pip install drf-spectacular
 
 
 2. Configure DRF Spectacular in Your Django Settings
 Add drf_spectacular to your INSTALLED_APPS and configure it in your settings.py:
 
-<!-- INSTALLED_APPS = [
+INSTALLED_APPS = [
     ...
     'rest_framework',
     'drf_spectacular',
@@ -17,7 +17,7 @@ Add drf_spectacular to your INSTALLED_APPS and configure it in your settings.py:
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-} -->
+}
 
 
 
@@ -27,7 +27,7 @@ Add a view to generate the OpenAPI schema. This schema will be used by Swagger U
 In your urls.py:
 
 
-<!-- from django.urls import path
+from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
@@ -39,7 +39,7 @@ urlpatterns = [
 
     # Redoc
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-] -->
+]
 
 
 4. Access the Swagger UI
@@ -54,12 +54,12 @@ Redoc: http://127.0.0.1:8000/api/schema/redoc/
 You can customize the generated schema using settings in settings.py. For example:
 
 
-<!-- SPECTACULAR_SETTINGS = {
+SPECTACULAR_SETTINGS = {
     'TITLE': 'My API',
     'DESCRIPTION': 'Description of my API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-} -->
+}
 
 This will adjust the title, description, and other metadata in your Swagger UI.
 
@@ -68,7 +68,7 @@ This will adjust the title, description, and other metadata in your Swagger UI.
 To improve the documentation, use DRF Spectacular decorators like @extend_schema on your views or viewsets.
 
 Example:
-<!-- from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -79,6 +79,6 @@ class MyView(APIView):
     )
     def get(self, request):
         return Response({"message": "Hello, world!"})
- -->
+
 
  With these steps, you'll have Swagger UI integrated and functional with Django DRF Spectacular!
